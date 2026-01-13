@@ -1,1 +1,0 @@
-# sulieszkoz_kolcsonzo-BE
