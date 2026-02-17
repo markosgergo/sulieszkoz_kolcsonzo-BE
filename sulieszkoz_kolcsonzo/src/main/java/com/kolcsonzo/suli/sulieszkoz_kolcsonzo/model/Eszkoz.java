@@ -1,9 +1,17 @@
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "eszkoz")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Eszkoz {
 
     @Id
@@ -14,36 +22,4 @@ public class Eszkoz {
     private String nev;
     private String tipus;
     private String sku;
-
-    public Integer getEszkozId() {
-        return eszkozId;
-    }
-
-    public void setEszkozId(Integer eszkozId) {
-        this.eszkozId = eszkozId;
-    }
-
-    public String getNev() {
-        return nev;
-    }
-
-    public void setNev(String nev) {
-        this.nev = nev;
-    }
-
-    public String getTipus() {
-        return tipus;
-    }
-
-    public void setTipus(String tipus) {
-        this.tipus = tipus;
-    }
-
-    public String getSku() {
-        return sku;
-    }
-
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
 }

@@ -1,9 +1,18 @@
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model;
 
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.enums.FelhasznaloSzerepkor;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "szerepkor")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Szerepkor {
 
     @Id
@@ -12,21 +21,6 @@ public class Szerepkor {
     private Integer szerepkorId;
 
     @Column(name = "szerepkor_nev")
-    private String szerepkorNev;
+    private FelhasznaloSzerepkor szerepkorNev;
 
-    public Integer getSzerepkorId() {
-        return szerepkorId;
-    }
-
-    public void setSzerepkorId(Integer szerepkorId) {
-        this.szerepkorId = szerepkorId;
-    }
-
-    public String getSzerepkorNev() {
-        return szerepkorNev;
-    }
-
-    public void setSzerepkorNev(String szerepkorNev) {
-        this.szerepkorNev = szerepkorNev;
-    }
 }
