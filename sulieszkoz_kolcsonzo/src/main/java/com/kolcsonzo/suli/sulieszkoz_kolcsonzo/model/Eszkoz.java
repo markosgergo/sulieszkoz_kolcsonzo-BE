@@ -22,4 +22,8 @@ public class Eszkoz {
     private String nev;
     private String tipus;
     private String sku;
+
+    public Long getId() {
+        return null;
+    }
 }
