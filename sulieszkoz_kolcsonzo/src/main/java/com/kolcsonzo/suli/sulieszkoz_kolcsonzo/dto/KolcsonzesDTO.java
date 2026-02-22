@@ -1,4 +1,3 @@
-// sulieszkoz_kolcsonzo/src/main/java/com/kolcsonzo/suli/sulieszkoz_kolcsonzo/dto/KolcsonzesDTO.java
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto;
 
 import lombok.AllArgsConstructor;

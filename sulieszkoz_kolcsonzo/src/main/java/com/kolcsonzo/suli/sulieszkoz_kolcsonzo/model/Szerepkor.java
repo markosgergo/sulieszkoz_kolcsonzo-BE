@@ -20,6 +20,7 @@ public class Szerepkor {
     @Column(name = "szerepkor_id")
     private Long szerepkorId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "szerepkor_nev")
     private FelhasznaloSzerepkor szerepkorNev;
 
