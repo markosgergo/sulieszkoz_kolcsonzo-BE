@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class EszkozDTO {
     private Long id;
     private String nev;
+    private String tipus;
+    private String sku;
     private String leiras;
     private boolean elerheto;
 }

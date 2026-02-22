@@ -22,4 +22,9 @@ public class Eszkoz {
     private String nev;
     private String tipus;
     private String sku;
+
+    @Column(columnDefinition = "TEXT")
+    private String leiras;
+    private boolean elerheto = true;
+
 }
