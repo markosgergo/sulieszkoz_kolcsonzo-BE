@@ -18,7 +18,7 @@ public class Szerepkor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "szerepkor_id")
-    private Integer szerepkorId;
+    private Long szerepkorId;
 
     @Column(name = "szerepkor_nev")
     private FelhasznaloSzerepkor szerepkorNev;

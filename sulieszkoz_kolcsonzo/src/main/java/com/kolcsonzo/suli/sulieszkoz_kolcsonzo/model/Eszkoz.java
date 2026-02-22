@@ -17,13 +17,9 @@ public class Eszkoz {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "eszkoz_id")
-    private Integer eszkozId;
+    private Long eszkozId;
 
     private String nev;
     private String tipus;
     private String sku;
-
-    public Long getId() {
-        return null;
-    }
 }

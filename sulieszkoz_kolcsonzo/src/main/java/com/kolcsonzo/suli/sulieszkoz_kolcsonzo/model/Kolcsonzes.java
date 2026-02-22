@@ -17,7 +17,7 @@ public class Kolcsonzes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "kolcsonzes_id")
-    private Integer kolcsonzesId;
+    private Long kolcsonzesId;
 
     // felhasznalo_id -> aki kölcsönzi
     @ManyToOne(fetch = FetchType.LAZY)
