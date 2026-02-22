@@ -1,5 +1,6 @@
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model;
 
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.enums.KolcsonzesStatuszEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,9 +36,9 @@ public class Kolcsonzes {
     private Felhasznalo kiado;
 
     // statusz_id -> státusz
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "statusz_id")
-    private KolcsonzesStatusz statusz;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statusz")
+    private KolcsonzesStatuszEnum statusz;
 
     @Column(name = "kiadas_datuma")
     private LocalDateTime kiadasDatuma;
