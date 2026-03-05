@@ -3,6 +3,7 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.KolcsonzesDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.KolcsonzesLetrehozoDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.enums.KolcsonzesStatuszEnum;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.mapper.KolcsonzesMapper;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Eszkoz;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Felhasznalo;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Kolcsonzes;
@@ -22,19 +23,21 @@ public class KolcsonzesService {
     private final KolcsonzesRepository kolcsonzesRepository;
     private final FelhasznaloRepository felhasznaloRepository;
     private final EszkozRepository eszkozRepository;
+    private final KolcsonzesMapper mapper;
 
     public KolcsonzesService(KolcsonzesRepository kolcsonzesRepository,
                              FelhasznaloRepository felhasznaloRepository,
-                             EszkozRepository eszkozRepository) {
+                             EszkozRepository eszkozRepository, KolcsonzesMapper mapper) {
         this.kolcsonzesRepository = kolcsonzesRepository;
         this.felhasznaloRepository = felhasznaloRepository;
         this.eszkozRepository = eszkozRepository;
+        this.mapper = mapper;
     }
 
     // összes kölcsönzés lekérdezése
     public List<KolcsonzesDTO> getAllKolcsonzes() {
         return kolcsonzesRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -66,30 +69,6 @@ public class KolcsonzesService {
         ujKolcsonzes.setStatusz(KolcsonzesStatuszEnum.KIKOLCSONOZVE);
 
         Kolcsonzes mentettKolcsonzes = kolcsonzesRepository.save(ujKolcsonzes);
-        return convertToDTO(mentettKolcsonzes);
-    }
-
-    // segédmetódus
-    private KolcsonzesDTO convertToDTO(Kolcsonzes k) {
-        KolcsonzesDTO dto = new KolcsonzesDTO();
-        dto.setId(k.getKolcsonzesId());
-
-        dto.setFelhasznaloId(k.getFelhasznalo().getFelhasznaloId());
-        dto.setFelhasznaloNev(k.getFelhasznalo().getNev());
-
-        dto.setEszkozId(k.getEszkoz().getEszkozId());
-        dto.setEszkozNev(k.getEszkoz().getNev());
-        dto.setEszkozSku(k.getEszkoz().getSku());
-
-        dto.setKiadoId(k.getKiado().getFelhasznaloId());
-        dto.setKiadoNev(k.getKiado().getNev());
-
-        dto.setStatuszNev(k.getStatusz().name());
-
-        dto.setKiadasDatuma(k.getKiadasDatuma());
-        dto.setVisszavetelDatuma(k.getVisszavetelDatuma());
-        dto.setHatarido(k.getHatarido());
-
-        return dto;
+        return mapper.toDTO(mentettKolcsonzes);
     }
 }

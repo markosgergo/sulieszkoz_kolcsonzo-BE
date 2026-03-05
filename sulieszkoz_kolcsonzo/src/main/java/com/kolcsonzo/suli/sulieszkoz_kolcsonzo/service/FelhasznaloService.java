@@ -3,6 +3,7 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.FelhasznaloLetrehozoDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.FelhasznaloDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.enums.FelhasznaloSzerepkor;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.mapper.FelhasznaloMapper;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Felhasznalo;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Szerepkor;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.FelhasznaloRepository;
@@ -17,17 +18,19 @@ public class FelhasznaloService {
 
     private final FelhasznaloRepository felhasznaloRepository;
     private final SzerepkorRepository szerepkorRepository;
+    private final FelhasznaloMapper mapper;
 
     //mindkét Repository beinjektálása
-    public FelhasznaloService(FelhasznaloRepository felhasznaloRepository, SzerepkorRepository szerepkorRepository) {
+    public FelhasznaloService(FelhasznaloRepository felhasznaloRepository, SzerepkorRepository szerepkorRepository, FelhasznaloMapper mapper) {
         this.felhasznaloRepository = felhasznaloRepository;
         this.szerepkorRepository = szerepkorRepository;
+        this.mapper = mapper;
     }
 
     // osszes felhasználó lekérdezése (jelszó nelkul)
     public List<FelhasznaloDTO> getAllFelhasznalo() {
         return felhasznaloRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -35,7 +38,7 @@ public class FelhasznaloService {
     public FelhasznaloDTO getFelhasznaloById(Long id) {
         Felhasznalo f = felhasznaloRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nem található felhasználó ezzel az ID-val: " + id));
-        return convertToDTO(f);
+        return mapper.toDTO(f);
     }
 
     //új felhasználó létrehozása / Regisztráció
@@ -56,7 +59,7 @@ public class FelhasznaloService {
         ujFelhasznalo.setSzerepkor(szerepkor);
 
         Felhasznalo mentettFelhasznalo = felhasznaloRepository.save(ujFelhasznalo);
-        return convertToDTO(mentettFelhasznalo);
+        return mapper.toDTO(mentettFelhasznalo);
     }
 
     //felhasználó törlése
@@ -65,17 +68,5 @@ public class FelhasznaloService {
             throw new RuntimeException("Nem található felhasználó ezzel az ID-val: " + id);
         }
         felhasznaloRepository.deleteById(id);
-    }
-
-    // átalakításhoz segéd metódus
-    private FelhasznaloDTO convertToDTO(Felhasznalo f) {
-        FelhasznaloDTO dto = new FelhasznaloDTO();
-        dto.setId(f.getFelhasznaloId());
-        dto.setNev(f.getNev());
-        dto.setEmail(f.getEmail());
-        if (f.getSzerepkor() != null) {
-            dto.setSzerepkorNev(f.getSzerepkor().getSzerepkorNev().name());
-        }
-        return dto;
     }
 }
