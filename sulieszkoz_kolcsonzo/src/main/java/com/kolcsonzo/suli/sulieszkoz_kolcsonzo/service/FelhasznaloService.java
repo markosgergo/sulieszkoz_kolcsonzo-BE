@@ -8,6 +8,7 @@ import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Felhasznalo;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Szerepkor;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.FelhasznaloRepository;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.SzerepkorRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,12 +20,14 @@ public class FelhasznaloService {
     private final FelhasznaloRepository felhasznaloRepository;
     private final SzerepkorRepository szerepkorRepository;
     private final FelhasznaloMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
     //mindkét Repository beinjektálása
-    public FelhasznaloService(FelhasznaloRepository felhasznaloRepository, SzerepkorRepository szerepkorRepository, FelhasznaloMapper mapper) {
+    public FelhasznaloService(FelhasznaloRepository felhasznaloRepository, SzerepkorRepository szerepkorRepository, FelhasznaloMapper mapper, PasswordEncoder passwordEncoder) {
         this.felhasznaloRepository = felhasznaloRepository;
         this.szerepkorRepository = szerepkorRepository;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // osszes felhasználó lekérdezése (jelszó nelkul)
@@ -47,9 +50,7 @@ public class FelhasznaloService {
         ujFelhasznalo.setNev(dto.getNev());
         ujFelhasznalo.setEmail(dto.getEmail());
 
-        //ITT KÉSŐBB TITKOSÍTANI KELL A JELSZÓT pl BCrypt
-        // Ideiglenesen szovegkent taroljuk
-        ujFelhasznalo.setJelszo(dto.getJelszo());
+        ujFelhasznalo.setJelszo(passwordEncoder.encode(dto.getJelszo()));
 
         // String szerepkör -> enum, majd annak kikeresése az adatbázisból
         FelhasznaloSzerepkor enumSzerepkor = FelhasznaloSzerepkor.valueOf(dto.getSzerepkorNev().toUpperCase());
