@@ -16,7 +16,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
     // (Éles ipari projektekben ezt az application.properties-ből szokták beolvasni)
-    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final String SECRET = "SuliEszkozKolcsonzoNagyonTitkosKulcs2024BackendApp";
+    private final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     // 10 óráig érvényes a token
     private final long JWT_TOKEN_VALIDITY = 1000 * 60 * 60 * 10;
