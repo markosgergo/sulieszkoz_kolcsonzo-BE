@@ -82,4 +82,21 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(response);
     }
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout() {
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false) // localhoston maradjon false
+                .path("/")
+                .maxAge(0) // Azonnal törli a sütit a böngészőből
+                .sameSite("Strict")
+                .build();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("uzenet", "Sikeres kijelentkezés!");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(response);
+    }
 }

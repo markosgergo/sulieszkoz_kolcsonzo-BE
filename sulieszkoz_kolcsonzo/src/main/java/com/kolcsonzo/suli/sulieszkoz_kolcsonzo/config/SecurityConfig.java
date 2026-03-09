@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/felhasznalok").permitAll() //regisztráció mindenkinek nyilvános
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/kolcsonzesek/kesesben").hasAnyRole("ADMIN","ALKALMAZOTT") // Csak ADMIN vagy TANÁR férhet hozzá
-                        .requestMatchers("api/kolcsonzesek/{id}/visszavetel").hasAnyRole("ADMIN","ALKALMAZOTT")
+                        .requestMatchers("/api/kolcsonzesek/{id}/visszavetel").hasAnyRole("ADMIN","ALKALMAZOTT")
                         .anyRequest().authenticated() // minden mashoz kotelezo bejelentkezni (kell a token)
                 )
 
