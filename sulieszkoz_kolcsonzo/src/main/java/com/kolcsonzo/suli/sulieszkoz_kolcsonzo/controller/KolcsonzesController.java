@@ -40,9 +40,16 @@ public class KolcsonzesController {
         return ResponseEntity.ok(service.getSajatKolcsonzesek(bejelentkezettEmail));
     }
 
+    // GET /api/kolcsonzesek/kesesben
+    @GetMapping("/kesesben")
+    public ResponseEntity<List<KolcsonzesDTO>> getKesesbenLevoKolcsonzesek() {
+        return ResponseEntity.ok(service.getKesesbenLevoKolcsonzesek());
+    }
+
     @PostMapping
     public ResponseEntity<KolcsonzesDTO> createKolcsonzes(@Valid @RequestBody KolcsonzesLetrehozoDTO dto) {
         KolcsonzesDTO letrehozottKolcsonzes = service.createKolcsonzes(dto);
         return new ResponseEntity<>(letrehozottKolcsonzes, HttpStatus.CREATED);
     }
+
 }

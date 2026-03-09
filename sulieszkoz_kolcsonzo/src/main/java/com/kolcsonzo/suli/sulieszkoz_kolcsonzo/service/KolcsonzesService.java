@@ -13,6 +13,7 @@ import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.KolcsonzesRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,5 +78,16 @@ public class KolcsonzesService {
 
         Kolcsonzes mentettKolcsonzes = kolcsonzesRepository.save(ujKolcsonzes);
         return mapper.toDTO(mentettKolcsonzes);
+    }
+
+    // ÚJ: Késésben lévő kölcsönzések lekérése
+    public List<KolcsonzesDTO> getKesesbenLevoKolcsonzesek() {
+        // Lekérjük a mai napot
+        LocalDate ma = LocalDate.now();
+
+        // Visszaadjuk azokat, amik KIKÖLCSÖNÖZVE vannak, de a határidejük régebbi, mint a mai nap
+        return kolcsonzesRepository.findByStatuszAndHataridoBefore(KolcsonzesStatuszEnum.KIKOLCSONOZVE, ma).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

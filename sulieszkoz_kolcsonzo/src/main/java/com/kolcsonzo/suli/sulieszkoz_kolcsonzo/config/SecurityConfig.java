@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll() // bejelentkezés mindenkinek nyilvános
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/felhasznalok").permitAll() //regisztráció mindenkinek nyilvános
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/kolcsonzesek/kesesben").hasAnyRole("ADMIN","ALKALMAZOTT") // Csak ADMIN vagy TANÁR férhet hozzá
                         .anyRequest().authenticated() // minden mashoz kotelezo bejelentkezni (kell a token)
                 )
 
