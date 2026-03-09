@@ -80,7 +80,7 @@ public class KolcsonzesService {
         return mapper.toDTO(mentettKolcsonzes);
     }
 
-    // ÚJ: Késésben lévő kölcsönzések lekérése
+    //Késésben lévő kölcsönzések lekérése
     public List<KolcsonzesDTO> getKesesbenLevoKolcsonzesek() {
         // Lekérjük a mai napot
         LocalDate ma = LocalDate.now();
@@ -89,5 +89,27 @@ public class KolcsonzesService {
         return kolcsonzesRepository.findByStatuszAndHataridoBefore(KolcsonzesStatuszEnum.KIKOLCSONOZVE, ma).stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
+    }
+    // Eszköz visszavétele
+    @Transactional
+    public KolcsonzesDTO visszaveszKolcsonzes(Long kolcsonzesId) {
+        Kolcsonzes kolcsonzes = kolcsonzesRepository.findById(kolcsonzesId)
+                .orElseThrow(() -> new RuntimeException("Kölcsönzés nem található!"));
+
+        if (kolcsonzes.getStatusz() == KolcsonzesStatuszEnum.VISSZAADVA) {
+            throw new RuntimeException("Ez az eszköz már vissza lett adva!");
+        }
+
+        // 1. Státusz és visszavétel dátumának beállítása
+        kolcsonzes.setStatusz(KolcsonzesStatuszEnum.VISSZAADVA);
+        kolcsonzes.setVisszavetelDatuma(LocalDateTime.now());
+
+        // 2. Az eszköz újra elérhetővé tétele
+        Eszkoz eszkoz = kolcsonzes.getEszkoz();
+        eszkoz.setElerheto(true);
+        eszkozRepository.save(eszkoz);
+
+        Kolcsonzes frissitett = kolcsonzesRepository.save(kolcsonzes);
+        return mapper.toDTO(frissitett);
     }
 }

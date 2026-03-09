@@ -52,4 +52,10 @@ public class KolcsonzesController {
         return new ResponseEntity<>(letrehozottKolcsonzes, HttpStatus.CREATED);
     }
 
+    //PUT /api/kolcsonzesek/{id}/visszavetel
+    @PutMapping("/{id}/visszavetel")
+    public ResponseEntity<KolcsonzesDTO> visszaveszKolcsonzes(@PathVariable Long id) {
+        return ResponseEntity.ok(service.visszaveszKolcsonzes(id));
+    }
+
 }

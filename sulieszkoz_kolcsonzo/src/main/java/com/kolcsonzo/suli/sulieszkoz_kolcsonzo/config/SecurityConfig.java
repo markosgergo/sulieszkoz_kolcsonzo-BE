@@ -37,6 +37,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable) // REST apinál kikapcsoljuk a CSRF-et
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // nem kell használni, van jwt
                 .authorizeHttpRequests(auth -> auth
@@ -44,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/felhasznalok").permitAll() //regisztráció mindenkinek nyilvános
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/kolcsonzesek/kesesben").hasAnyRole("ADMIN","ALKALMAZOTT") // Csak ADMIN vagy TANÁR férhet hozzá
+                        .requestMatchers("api/kolcsonzesek/{id}/visszavetel").hasAnyRole("ADMIN","ALKALMAZOTT")
                         .anyRequest().authenticated() // minden mashoz kotelezo bejelentkezni (kell a token)
                 )
 

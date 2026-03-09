@@ -44,6 +44,14 @@ public class FelhasznaloService {
         return mapper.toDTO(f);
     }
 
+    // felhasználó lekérése email cím alapján (a /me végponthoz)
+    public FelhasznaloDTO getFelhasznaloByEmail(String email) {
+        Felhasznalo felhasznalo = felhasznaloRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Nem található felhasználó ezzel az email címmel: " + email));
+
+        return mapper.toDTO(felhasznalo);
+    }
+
     //új felhasználó létrehozása / Regisztráció
     public FelhasznaloDTO createFelhasznalo(FelhasznaloLetrehozoDTO dto) {
         Felhasznalo ujFelhasznalo = new Felhasznalo();
