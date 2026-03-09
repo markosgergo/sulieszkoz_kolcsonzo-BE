@@ -27,6 +27,13 @@ public class EszkozService {
                 .collect(Collectors.toList());
     }
 
+    // csak a szabad eszközök lekérése
+    public List<EszkozDTO> getSzabadEszkozok() {
+        return repository.findByElerhetoTrue().stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     //egyetlen eszköz lekérdezése ID alapján (READ)
     public EszkozDTO getEszkozById(Long id) {
         Eszkoz eszkoz = repository.findById(id)

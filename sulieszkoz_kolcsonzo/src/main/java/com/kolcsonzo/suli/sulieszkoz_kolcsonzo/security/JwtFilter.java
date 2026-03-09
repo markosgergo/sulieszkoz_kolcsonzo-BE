@@ -1,5 +1,6 @@
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.security;
 
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,23 +29,27 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // megnézzük van e authorization header es az Bearer-rel kezdődik-e
-        final String authorizationHeader = request.getHeader("Authorization");
-
         String email = null;
         String jwt = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7); // bearer rész levágása
-            email = jwtUtil.extractUsername(jwt);
+        // 1. Kikeresjük a "jwt" nevű sütit a kérésből
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    try {
+                        email = jwtUtil.extractUsername(jwt);
+                    } catch (Exception e) {
+                        System.out.println("Érvénytelen vagy lejárt süti token!");
+                    }
+                    break;
+                }
+            }
         }
 
-        // ha van email a tokenben és a felhasználó még nincs bejelentkeztetve
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
             UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(email);
 
-            // ha a token érvényes beállítjuk a jogosultságokat
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
@@ -53,7 +58,6 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        //továbbengedjük a kérést
         filterChain.doFilter(request, response);
     }
 }

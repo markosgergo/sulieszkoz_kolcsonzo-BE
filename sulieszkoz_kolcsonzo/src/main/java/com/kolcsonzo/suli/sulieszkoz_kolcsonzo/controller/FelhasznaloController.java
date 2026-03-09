@@ -3,6 +3,7 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.controller;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.FelhasznaloLetrehozoDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.FelhasznaloDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.FelhasznaloService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class FelhasznaloController {
 
     // POST: /api/felhasznalok Új felhasználó regisztrációja
     @PostMapping
-    public ResponseEntity<FelhasznaloDTO> createFelhasznalo(@RequestBody FelhasznaloLetrehozoDTO dto) {
+    public ResponseEntity<FelhasznaloDTO> createFelhasznalo(@Valid @RequestBody FelhasznaloLetrehozoDTO dto) {
         FelhasznaloDTO letrehozottFelhasznalo = service.createFelhasznalo(dto);
         return new ResponseEntity<>(letrehozottFelhasznalo, HttpStatus.CREATED);
     }

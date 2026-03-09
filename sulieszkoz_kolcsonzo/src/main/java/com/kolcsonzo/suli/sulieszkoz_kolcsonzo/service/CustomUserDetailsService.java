@@ -1,4 +1,4 @@
-package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.security;
+package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service;
 
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Felhasznalo;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.FelhasznaloRepository;

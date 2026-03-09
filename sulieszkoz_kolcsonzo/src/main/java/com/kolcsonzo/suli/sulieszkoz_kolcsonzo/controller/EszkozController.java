@@ -2,7 +2,9 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.controller;
 
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.EszkozDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.EszkozService;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.QrCodeService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +14,11 @@ import java.util.List;
 @RequestMapping("/api/eszkozok")
 public class EszkozController {
     private final EszkozService service;
+    private final QrCodeService qrCodeService;
 
-    public EszkozController(EszkozService service) {
+    public EszkozController(EszkozService service, QrCodeService qrCodeService) {
         this.service = service;
+        this.qrCodeService = qrCodeService;
     }
 
     // GET: /api/eszkozok Összes eszköz lekérdezése
@@ -47,5 +51,20 @@ public class EszkozController {
     public ResponseEntity<Void> deleteEszkoz(@PathVariable Long id) {
         service.deleteEszkoz(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(value = "/{id}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getEszkozQrCode(@PathVariable Long id) {
+        EszkozDTO eszkoz = service.getEszkozById(id);
+        String qrText = "ESZKOZ_ID:" + eszkoz.getId() + " | SKU:" + eszkoz.getSku() + " | NEV:" + eszkoz.getNev();
+        byte[] qrImage = qrCodeService.generateQrCode(qrText, 300, 300);
+
+        return ResponseEntity.ok(qrImage);
+    }
+
+    // GET /api/eszkozok/szabad
+    @GetMapping("/szabad")
+    public ResponseEntity<List<EszkozDTO>> getSzabadEszkozok() {
+        return ResponseEntity.ok(service.getSzabadEszkozok());
     }
 }

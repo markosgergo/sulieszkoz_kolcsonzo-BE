@@ -3,6 +3,7 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.controller;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.KolcsonzesDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.KolcsonzesLetrehozoDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.KolcsonzesService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class KolcsonzesController {
     }
 
     @PostMapping
-    public ResponseEntity<KolcsonzesDTO> createKolcsonzes(@RequestBody KolcsonzesLetrehozoDTO dto) {
+    public ResponseEntity<KolcsonzesDTO> createKolcsonzes(@Valid @RequestBody KolcsonzesLetrehozoDTO dto) {
         KolcsonzesDTO letrehozottKolcsonzes = service.createKolcsonzes(dto);
         return new ResponseEntity<>(letrehozottKolcsonzes, HttpStatus.CREATED);
     }

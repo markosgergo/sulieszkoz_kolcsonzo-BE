@@ -1,13 +1,15 @@
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.controller;
 
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.LoginDTO;
-import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.security.CustomUserDetailsService;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.CustomUserDetailsService;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,10 +41,19 @@ public class AuthController {
         //geenerálunk neki egy tokent
         final String jwt = jwtUtil.generateToken(userDetails);
 
+        ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
+                .httpOnly(true)    // JavaScript nem fér hozzá (XSS védelem)
+                .secure(false)     // Fejlesztés alatt (localhost) false, élesben (HTTPS) true kell legyen!
+                .path("/")         // A teljes weblapra érvényes
+                .maxAge(10 * 60 * 60) // 10 óráig érvényes (másodpercben)
+                .sameSite("Strict") // CSRF támadások elleni védelem
+                .build();
+
         //visszaküldjük egy JSON-ben
         Map<String, String> response = new HashMap<>();
         response.put("token", jwt);
 
-        return ResponseEntity.ok(response);
-    }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(response);    }
 }
