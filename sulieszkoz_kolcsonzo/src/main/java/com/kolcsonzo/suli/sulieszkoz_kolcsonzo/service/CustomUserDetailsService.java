@@ -2,7 +2,7 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service;
 
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Felhasznalo;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.FelhasznaloRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -6,6 +6,8 @@ import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.KolcsonzesService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +25,19 @@ public class KolcsonzesController {
     @GetMapping
     public ResponseEntity<List<KolcsonzesDTO>> getAllKolcsonzes() {
         return ResponseEntity.ok(service.getAllKolcsonzes());
+    }
+
+    //GET /api/kolcsonzesek/sajat
+    @GetMapping("/sajat")
+    public ResponseEntity<List<KolcsonzesDTO>> getSajatKolcsonzesek() {
+        // 1. Kinyerjük a bejelentkezett felhasználó adatait a biztonsági kontextusból
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 2. A név (username) nálunk az Email címet jelenti (hiszen azzal jelentkezett be)
+        String bejelentkezettEmail = authentication.getName();
+
+        // 3. Visszaadjuk az ő kölcsönzéseit
+        return ResponseEntity.ok(service.getSajatKolcsonzesek(bejelentkezettEmail));
     }
 
     @PostMapping

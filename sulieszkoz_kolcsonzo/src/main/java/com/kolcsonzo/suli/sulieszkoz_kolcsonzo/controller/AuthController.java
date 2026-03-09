@@ -3,13 +3,14 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.controller;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.LoginDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service.CustomUserDetailsService;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.security.JwtUtil;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus; // ÚJ IMPORT
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,30 +31,41 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO loginDTO) {
-        // megpróbáljuk hitelesíteni a felhasználót a megadott adatokkal
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getJelszo())
-        );
 
-        // kikeressuk az adatait
+        // 1. Megpróbáljuk hitelesíteni a felhasználót a megadott adatokkal
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getJelszo())
+            );
+        } catch (Exception e) {
+            // HA HIBÁS A JELSZÓ VAGY AZ EMAIL CÍM:
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("hiba", "Hibás email cím vagy jelszó!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
+
+        // 2. Ha sikeres, kikeressük az adatait
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginDTO.getEmail());
 
-        //geenerálunk neki egy tokent
+        // 3. Generálunk neki egy tokent
         final String jwt = jwtUtil.generateToken(userDetails);
 
+        // 4. Létrehozzuk az HttpOnly Sütit
         ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
-                .httpOnly(true)    // JavaScript nem fér hozzá (XSS védelem)
-                .secure(false)     // Fejlesztés alatt (localhost) false, élesben (HTTPS) true kell legyen!
-                .path("/")         // A teljes weblapra érvényes
-                .maxAge(10 * 60 * 60) // 10 óráig érvényes (másodpercben)
-                .sameSite("Strict") // CSRF támadások elleni védelem
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(10 * 60 * 60)
+                .sameSite("Strict")
                 .build();
 
-        //visszaküldjük egy JSON-ben
+        // 5. Összeállítjuk a szép JSON üzenetet
         Map<String, String> response = new HashMap<>();
-        response.put("token", jwt);
+        response.put("uzenet", "Sikeres bejelentkezés!");
 
+        // 6. A Sütit a fejlécben küldjük vissza
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(response);    }
+                .body(response);
+    }
 }

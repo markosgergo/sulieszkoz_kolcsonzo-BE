@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll() // bejelentkezés mindenkinek nyilvános
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/felhasznalok").permitAll() //regisztráció mindenkinek nyilvános
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated() // minden mashoz kotelezo bejelentkezni (kell a token)
                 )
 
@@ -49,4 +50,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }

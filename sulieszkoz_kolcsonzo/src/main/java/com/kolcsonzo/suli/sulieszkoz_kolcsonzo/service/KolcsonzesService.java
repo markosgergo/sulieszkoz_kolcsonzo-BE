@@ -41,6 +41,13 @@ public class KolcsonzesService {
                 .collect(Collectors.toList());
     }
 
+    // saját kölcsönzések lekérése email alapján
+    public List<KolcsonzesDTO> getSajatKolcsonzesek(String email) {
+        return kolcsonzesRepository.findByFelhasznalo_Email(email).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     // új kölcsönzés indítása
     @Transactional
     public KolcsonzesDTO createKolcsonzes(KolcsonzesLetrehozoDTO dto) {
