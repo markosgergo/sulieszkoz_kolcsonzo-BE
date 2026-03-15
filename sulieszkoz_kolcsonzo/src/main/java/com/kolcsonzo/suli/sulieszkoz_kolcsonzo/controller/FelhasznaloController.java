@@ -32,6 +32,12 @@ public class FelhasznaloController {
         return ResponseEntity.ok(service.getFelhasznaloById(id));
     }
 
+    // GET /api/felhasznalok/kereses?nev=valami
+    @GetMapping("/kereses")
+    public ResponseEntity<List<FelhasznaloDTO>> keresesNevAlapjan(@RequestParam String nev) {
+        return ResponseEntity.ok(service.keresesNevAlapjan(nev));
+    }
+
     // POST: /api/felhasznalok Új felhasználó regisztrációja
     @PostMapping
     public ResponseEntity<FelhasznaloDTO> createFelhasznalo(@Valid @RequestBody FelhasznaloLetrehozoDTO dto) {

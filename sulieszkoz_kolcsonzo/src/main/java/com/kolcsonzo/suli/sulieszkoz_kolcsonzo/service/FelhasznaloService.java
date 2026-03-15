@@ -78,4 +78,10 @@ public class FelhasznaloService {
         }
         felhasznaloRepository.deleteById(id);
     }
+
+    public List<FelhasznaloDTO> keresesNevAlapjan(String nev) {
+        return felhasznaloRepository.findByNevContainingIgnoreCase(nev).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
 }

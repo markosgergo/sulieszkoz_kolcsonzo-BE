@@ -77,4 +77,10 @@ public class EszkozService {
         }
         repository.deleteById(id);
     }
+
+    public List<EszkozDTO> keresesNevAlapjan(String nev) {
+        return repository.findByNevContainingIgnoreCase(nev).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
 }

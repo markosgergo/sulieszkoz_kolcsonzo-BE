@@ -67,4 +67,10 @@ public class EszkozController {
     public ResponseEntity<List<EszkozDTO>> getSzabadEszkozok() {
         return ResponseEntity.ok(service.getSzabadEszkozok());
     }
+
+    //GET /api/eszkozok/kereses?nev=valami
+    @GetMapping("/kereses")
+    public ResponseEntity<List<EszkozDTO>> keresesNevAlapjan(@RequestParam String nev) {
+        return ResponseEntity.ok(service.keresesNevAlapjan(nev));
+    }
 }

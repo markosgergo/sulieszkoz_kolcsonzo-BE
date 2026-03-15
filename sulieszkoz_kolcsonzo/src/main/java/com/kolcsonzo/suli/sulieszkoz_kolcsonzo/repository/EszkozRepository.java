@@ -10,5 +10,6 @@ import java.util.List; // Ezt importáld be!
 public interface EszkozRepository extends JpaRepository<Eszkoz, Long> {
 
     List<Eszkoz> findByElerhetoTrue();
+    List<Eszkoz> findByNevContainingIgnoreCase(String nev);
 
 }
