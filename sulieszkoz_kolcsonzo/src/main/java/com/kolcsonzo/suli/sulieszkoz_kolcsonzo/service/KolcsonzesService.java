@@ -3,6 +3,8 @@ package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.KolcsonzesDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.KolcsonzesLetrehozoDTO;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.enums.KolcsonzesStatuszEnum;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.exception.BusinessException;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.exception.EntityNotFoundException;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.mapper.KolcsonzesMapper;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Eszkoz;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Felhasznalo;
@@ -28,7 +30,8 @@ public class KolcsonzesService {
 
     public KolcsonzesService(KolcsonzesRepository kolcsonzesRepository,
                              FelhasznaloRepository felhasznaloRepository,
-                             EszkozRepository eszkozRepository, KolcsonzesMapper mapper) {
+                             EszkozRepository eszkozRepository,
+                             KolcsonzesMapper mapper) {
         this.kolcsonzesRepository = kolcsonzesRepository;
         this.felhasznaloRepository = felhasznaloRepository;
         this.eszkozRepository = eszkozRepository;
@@ -53,16 +56,17 @@ public class KolcsonzesService {
     @Transactional
     public KolcsonzesDTO createKolcsonzes(KolcsonzesLetrehozoDTO dto) {
         Felhasznalo diak = felhasznaloRepository.findById(dto.getFelhasznaloId())
-                .orElseThrow(() -> new RuntimeException("Nem található felhasználó (diák)."));
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato felhasznalo (diak) ezzel az ID-val: " + dto.getFelhasznaloId()));
 
         Felhasznalo kiado = felhasznaloRepository.findById(dto.getKiadoId())
-                .orElseThrow(() -> new RuntimeException("Nem található kiadó (tanár/admin)."));
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato kiado (tanar/admin) ezzel az ID-val: " + dto.getKiadoId()));
 
         Eszkoz eszkoz = eszkozRepository.findById(dto.getEszkozId())
-                .orElseThrow(() -> new RuntimeException("Nem található eszköz."));
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato eszkoz ezzel az ID-val: " + dto.getEszkozId()));
 
+        // Uzleti szabaly: nem elerheto eszkoz nem kolcsonozhetelo -> BusinessException (400)
         if (!eszkoz.isElerheto()) {
-            throw new RuntimeException("Ez az eszköz jelenleg nincs készleten vagy ki van kölcsönözve!");
+            throw new BusinessException("Ez az eszkoz jelenleg nincs keszleten vagy ki van kolcsonozve!");
         }
 
         eszkoz.setElerheto(false);
@@ -82,29 +86,25 @@ public class KolcsonzesService {
 
     //Késésben lévő kölcsönzések lekérése
     public List<KolcsonzesDTO> getKesesbenLevoKolcsonzesek() {
-        // Lekérjük a mai napot
         LocalDate ma = LocalDate.now();
-
-        // Visszaadjuk azokat, amik KIKÖLCSÖNÖZVE vannak, de a határidejük régebbi, mint a mai nap
         return kolcsonzesRepository.findByStatuszAndHataridoBefore(KolcsonzesStatuszEnum.KIKOLCSONOZVE, ma).stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
-    // Eszköz visszavétele
+
     @Transactional
     public KolcsonzesDTO visszaveszKolcsonzes(Long kolcsonzesId) {
         Kolcsonzes kolcsonzes = kolcsonzesRepository.findById(kolcsonzesId)
-                .orElseThrow(() -> new RuntimeException("Kölcsönzés nem található!"));
+                .orElseThrow(() -> new EntityNotFoundException("Kolcsonzes nem talalhato ezzel az ID-val: " + kolcsonzesId));
 
+        // Uzleti szabaly: mar visszaadott eszkoz nem veheteto vissza ujra -> BusinessException (400)
         if (kolcsonzes.getStatusz() == KolcsonzesStatuszEnum.VISSZAADVA) {
-            throw new RuntimeException("Ez az eszköz már vissza lett adva!");
+            throw new BusinessException("Ez az eszkoz mar vissza lett adva!");
         }
 
-        // 1. Státusz és visszavétel dátumának beállítása
         kolcsonzes.setStatusz(KolcsonzesStatuszEnum.VISSZAADVA);
         kolcsonzes.setVisszavetelDatuma(LocalDateTime.now());
 
-        // 2. Az eszköz újra elérhetővé tétele
         Eszkoz eszkoz = kolcsonzes.getEszkoz();
         eszkoz.setElerheto(true);
         eszkozRepository.save(eszkoz);

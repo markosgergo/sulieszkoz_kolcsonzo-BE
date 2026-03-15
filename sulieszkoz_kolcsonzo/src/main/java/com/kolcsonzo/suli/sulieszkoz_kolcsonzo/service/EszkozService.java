@@ -1,10 +1,11 @@
 package com.kolcsonzo.suli.sulieszkoz_kolcsonzo.service;
 
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.EszkozDTO;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.exception.EntityNotFoundException;
+import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.mapper.EszkozMapper;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.model.Eszkoz;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.EszkozRepository;
 import org.springframework.stereotype.Service;
-import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.mapper.EszkozMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class EszkozService {
     //egyetlen eszköz lekérdezése ID alapján (READ)
     public EszkozDTO getEszkozById(Long id) {
         Eszkoz eszkoz = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nem található eszköz ezzel az ID-val: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato eszkoz ezzel az ID-val: " + id));
         return mapper.toDTO(eszkoz);
     }
 
@@ -50,7 +51,6 @@ public class EszkozService {
         ujEszkoz.setLeiras(dto.getLeiras());
         ujEszkoz.setElerheto(dto.isElerheto());
 
-        //mentés
         Eszkoz mentettEszkoz = repository.save(ujEszkoz);
         return mapper.toDTO(mentettEszkoz);
     }
@@ -58,7 +58,7 @@ public class EszkozService {
     // meglévő eszköz módosítása (UPDATE)
     public EszkozDTO updateEszkoz(Long id, EszkozDTO dto) {
         Eszkoz meglevoEszkoz = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nem található eszköz ezzel az ID-val: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato eszkoz ezzel az ID-val: " + id));
 
         meglevoEszkoz.setNev(dto.getNev());
         meglevoEszkoz.setTipus(dto.getTipus());
@@ -73,7 +73,7 @@ public class EszkozService {
     //eszköz törlése (DELETE)
     public void deleteEszkoz(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Nem található eszköz ezzel az ID-val: " + id);
+            throw new EntityNotFoundException("Nem talalhato eszkoz ezzel az ID-val: " + id);
         }
         repository.deleteById(id);
     }

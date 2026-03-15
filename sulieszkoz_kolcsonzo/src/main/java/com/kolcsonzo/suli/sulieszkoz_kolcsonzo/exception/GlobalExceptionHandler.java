@@ -13,8 +13,20 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+    // 404 - entitas nem talalhato
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException ex) {
+        Map<String, Object> errorBody = new HashMap<>();
+        errorBody.put("idopont", LocalDateTime.now());
+        errorBody.put("hiba", ex.getMessage());
+        errorBody.put("statusz", HttpStatus.NOT_FOUND.value());
+
+        return new ResponseEntity<>(errorBody, HttpStatus.NOT_FOUND);
+    }
+
+    // 400 - uzleti logika megsertese (pl. nem elerheto eszkoz kolcsonzese)
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
         Map<String, Object> errorBody = new HashMap<>();
         errorBody.put("idopont", LocalDateTime.now());
         errorBody.put("hiba", ex.getMessage());
@@ -23,6 +35,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorBody, HttpStatus.BAD_REQUEST);
     }
 
+    // 400 - validacios hibak (@Valid annotacio altal dobott hibak)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
