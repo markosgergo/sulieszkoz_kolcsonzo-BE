@@ -49,4 +49,18 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    // 500 - Minden egyéb váratlan szerverhiba elkapása
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        Map<String, Object> errorBody = new HashMap<>();
+        errorBody.put("idopont", LocalDateTime.now());
+        errorBody.put("hiba", "Váratlan szerverhiba történt: " + ex.getMessage());
+        errorBody.put("statusz", HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+        // A konzolra is kiírjuk a nyomkövetéshez
+        ex.printStackTrace();
+
+        return new ResponseEntity<>(errorBody, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
