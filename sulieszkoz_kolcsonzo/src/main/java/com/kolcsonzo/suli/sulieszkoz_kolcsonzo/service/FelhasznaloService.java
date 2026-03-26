@@ -35,7 +35,7 @@ public class FelhasznaloService {
 
     // osszes felhasználó lekérdezése (jelszó nelkul)
     public List<FelhasznaloDTO> getAllFelhasznalo() {
-        return felhasznaloRepository.findAll().stream()
+        return felhasznaloRepository.findByToroltFalse().stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -73,10 +73,10 @@ public class FelhasznaloService {
 
     //felhasználó törlése
     public void deleteFelhasznalo(Long id) {
-        if (!felhasznaloRepository.existsById(id)) {
-            throw new EntityNotFoundException("Nem talalhato felhasznalo ezzel az ID-val: " + id);
-        }
-        felhasznaloRepository.deleteById(id);
+        Felhasznalo f = felhasznaloRepository.findById(id)
+                .orElseThrow(()-> new EntityNotFoundException("Nem talalhato felhasznalo ezzel az ID-val: " + id));
+        f.setTorolt(true);
+        felhasznaloRepository.save(f);
     }
 
     public List<FelhasznaloDTO> keresesNevAlapjan(String nev) {

@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface FelhasznaloRepository extends JpaRepository<Felhasznalo,Long> {
     Optional<Felhasznalo> findByEmail(String email);
     List<Felhasznalo> findByNevContainingIgnoreCase(String nev);
+    List<Felhasznalo> findByToroltFalse();
 }

@@ -23,6 +23,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Felhasznalo felhasznalo = felhasznaloRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Nem található felhasználó ezzel az emaillel: " + email));
+
+        if (felhasznalo.isTorolt()) {
+            throw new UsernameNotFoundException("Ez a felhasználói fiók törölve lett!");
+        }
+
         return User.builder()
                 .username(felhasznalo.getEmail())
                 .password(felhasznalo.getJelszo())

@@ -26,5 +26,7 @@ public class Eszkoz {
     @Column(columnDefinition = "TEXT")
     private String leiras;
     private boolean elerheto = true;
+    @Column(name = "torolt", nullable = false)
+    private boolean torolt = false;
 
 }

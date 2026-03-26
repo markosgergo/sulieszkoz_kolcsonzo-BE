@@ -28,4 +28,6 @@ public class Felhasznalo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "szerepkor_id")
     private Szerepkor szerepkor;
+    @Column(name = "torolt", nullable = false)
+    private boolean torolt = false;
 }

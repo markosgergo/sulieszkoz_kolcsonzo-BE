@@ -23,7 +23,7 @@ public class EszkozService {
 
     //összes eszköz lekérdezése (READ)
     public List<EszkozDTO> getAllEszkoz() {
-        return repository.findAll().stream()
+        return repository.findByToroltFalse().stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -72,10 +72,11 @@ public class EszkozService {
 
     //eszköz törlése (DELETE)
     public void deleteEszkoz(Long id) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Nem talalhato eszkoz ezzel az ID-val: " + id);
-        }
-        repository.deleteById(id);
+        Eszkoz e = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato eszkoz: " + id));
+        e.setTorolt(true);
+        e.setElerheto(false); // Ha törölve van, ne legyen elérhető se
+        repository.save(e);
     }
 
     public List<EszkozDTO> keresesNevAlapjan(String nev) {
