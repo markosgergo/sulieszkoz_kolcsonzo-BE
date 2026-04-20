@@ -51,4 +51,23 @@ public class FelhasznaloController {
         service.deleteFelhasznalo(id);
         return ResponseEntity.noContent().build();
     }
+
+    // PUT: /api/felhasznalok/{id}/jelszo
+    @PutMapping("/{id}/jelszo")
+    public ResponseEntity<Void> modositJelszo(
+            @PathVariable Long id,
+            @Valid @RequestBody com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.JelszoModositasDTO dto) {
+
+        service.modositJelszo(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    // PUT: /api/felhasznalok/{id}/szerepkor
+    @PutMapping("/{id}/szerepkor")
+    public ResponseEntity<FelhasznaloDTO> modositSzerepkor(
+            @PathVariable Long id,
+            @Valid @RequestBody com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.SzerepkorModositasDTO dto) {
+
+        return ResponseEntity.ok(service.modositSzerepkor(id, dto.getUjSzerepkor()));
+    }
 }

@@ -11,6 +11,7 @@ import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.FelhasznaloRepository;
 import com.kolcsonzo.suli.sulieszkoz_kolcsonzo.repository.SzerepkorRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,5 +84,41 @@ public class FelhasznaloService {
         return felhasznaloRepository.findByNevContainingIgnoreCase(nev).stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    // JELSZÓ MÓDOSÍTÁSA
+    @Transactional
+    public void modositJelszo(Long id, com.kolcsonzo.suli.sulieszkoz_kolcsonzo.dto.JelszoModositasDTO dto) {
+        Felhasznalo felhasznalo = felhasznaloRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Felhasználó nem található: " + id));
+
+        if (!passwordEncoder.matches(dto.getRegiJelszo(), felhasznalo.getJelszo())) {
+            throw new IllegalArgumentException("A megadott régi jelszó helytelen!");
+        }
+
+        // Új jelszó kódolása és mentése
+        felhasznalo.setJelszo(passwordEncoder.encode(dto.getUjJelszo()));
+        felhasznaloRepository.save(felhasznalo);
+    }
+
+    // SZEREPKÖR MÓDOSÍTÁSA
+    @Transactional
+    public FelhasznaloDTO modositSzerepkor(Long id, String ujSzerepkorNev) {
+        Felhasznalo felhasznalo = felhasznaloRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Felhasználó nem található: " + id));
+
+        FelhasznaloSzerepkor enumSzerepkor;
+        try {
+            enumSzerepkor = FelhasznaloSzerepkor.valueOf(ujSzerepkorNev.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Érvénytelen szerepkör: " + ujSzerepkorNev);
+        }
+
+        Szerepkor szerepkor = szerepkorRepository.findBySzerepkorNev(enumSzerepkor)
+                .orElseThrow(() -> new EntityNotFoundException("Nem létező szerepkör az adatbázisban: " + ujSzerepkorNev));
+
+        felhasznalo.setSzerepkor(szerepkor);
+        Felhasznalo frissitett = felhasznaloRepository.save(felhasznalo);
+        return mapper.toDTO(frissitett);
     }
 }
