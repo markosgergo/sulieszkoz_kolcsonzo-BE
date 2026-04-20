@@ -92,8 +92,9 @@ public class FelhasznaloService {
         Felhasznalo felhasznalo = felhasznaloRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Felhasználó nem található: " + id));
 
+        // Ha rossz a régi jelszó, BusinessException-t dobunk (ez nem okoz 500-as szerverhibát!)
         if (!passwordEncoder.matches(dto.getRegiJelszo(), felhasznalo.getJelszo())) {
-            throw new IllegalArgumentException("A megadott régi jelszó helytelen!");
+            throw new com.kolcsonzo.suli.sulieszkoz_kolcsonzo.exception.BusinessException("A megadott régi jelszó helytelen!");
         }
 
         // Új jelszó kódolása és mentése
@@ -111,7 +112,7 @@ public class FelhasznaloService {
         try {
             enumSzerepkor = FelhasznaloSzerepkor.valueOf(ujSzerepkorNev.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Érvénytelen szerepkör: " + ujSzerepkorNev);
+            throw new com.kolcsonzo.suli.sulieszkoz_kolcsonzo.exception.BusinessException("Érvénytelen szerepkör: " + ujSzerepkorNev);
         }
 
         Szerepkor szerepkor = szerepkorRepository.findBySzerepkorNev(enumSzerepkor)
