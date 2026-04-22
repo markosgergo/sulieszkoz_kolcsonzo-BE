@@ -60,4 +60,10 @@ public class KolcsonzesController {
         return ResponseEntity.ok(service.visszaveszKolcsonzes(id));
     }
 
+    // PUT /api/kolcsonzesek/visszavetel/eszkoz/{eszkozId}
+    @PutMapping("/visszavetel/eszkoz/{eszkozId}")
+    public ResponseEntity<KolcsonzesDTO> visszaveszByEszkozId(@PathVariable Long eszkozId) {
+        return ResponseEntity.ok(service.visszaveszByEszkozId(eszkozId));
+    }
+
 }

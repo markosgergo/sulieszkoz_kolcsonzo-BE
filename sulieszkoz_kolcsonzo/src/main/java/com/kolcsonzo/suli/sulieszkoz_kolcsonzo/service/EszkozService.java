@@ -30,7 +30,7 @@ public class EszkozService {
 
     // csak a szabad eszközök lekérése
     public List<EszkozDTO> getSzabadEszkozok() {
-        return repository.findByElerhetoTrue().stream()
+        return repository.findByElerhetoTrueAndToroltFalse().stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -80,7 +80,7 @@ public class EszkozService {
     }
 
     public List<EszkozDTO> keresesNevAlapjan(String nev) {
-        return repository.findByNevContainingIgnoreCase(nev).stream()
+        return repository.findByNevContainingIgnoreCaseAndToroltFalse(nev).stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }

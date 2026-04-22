@@ -13,5 +13,6 @@ public interface EszkozRepository extends JpaRepository<Eszkoz, Long> {
     List<Eszkoz> findByToroltFalse();
     List<Eszkoz> findByNevContainingIgnoreCase(String nev);
     List<Eszkoz> findByElerhetoTrueAndToroltFalse();
+    List<Eszkoz> findByNevContainingIgnoreCaseAndToroltFalse(String nev);
 
 }

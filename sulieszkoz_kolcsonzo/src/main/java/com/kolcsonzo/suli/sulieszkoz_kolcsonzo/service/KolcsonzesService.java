@@ -112,4 +112,20 @@ public class KolcsonzesService {
         Kolcsonzes frissitett = kolcsonzesRepository.save(kolcsonzes);
         return mapper.toDTO(frissitett);
     }
+    @Transactional
+    public KolcsonzesDTO visszaveszByEszkozId(Long eszkozId) {
+        // Megkeressük az adott eszközhöz tartozó AKTÍV (kikölcsönzött) státuszú kölcsönzést
+        Kolcsonzes kolcsonzes = kolcsonzesRepository.findByEszkoz_EszkozIdAndStatusz(eszkozId, KolcsonzesStatuszEnum.KIKOLCSONOZVE)
+                .orElseThrow(() -> new BusinessException("Nincs aktív kölcsönzés ehhez az eszközhöz, vagy már vissza lett adva!"));
+
+        kolcsonzes.setStatusz(KolcsonzesStatuszEnum.VISSZAADVA);
+        kolcsonzes.setVisszavetelDatuma(LocalDateTime.now());
+
+        Eszkoz eszkoz = kolcsonzes.getEszkoz();
+        eszkoz.setElerheto(true);
+        eszkozRepository.save(eszkoz);
+
+        Kolcsonzes frissitett = kolcsonzesRepository.save(kolcsonzes);
+        return mapper.toDTO(frissitett);
+    }
 }
