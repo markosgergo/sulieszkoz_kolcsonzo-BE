@@ -1,13 +1,22 @@
-# Használjunk hivatalos Java 21 image-t
-FROM eclipse-temurin:21-jdk-alpine
-
-# Munkakönyvtár beállítása
+# --- 1. LÉPÉS: FORDÍTÁS A DOCKEREN BELÜL (Linux környezetben) ---
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Másoljuk be a lefordított jar fájlt (a target mappából)
-COPY target/sulieszkoz_kolcsonzo-0.0.1-SNAPSHOT.jar app.jar
+# Bemásoljuk a projekt leíróját és a forráskódot (NEM a lefordított taget-et!)
+COPY pom.xml .
+COPY src ./src
 
-# Port kiajánlása (alapértelmezett Spring Boot port)
+# A Docker maga végzi el a fordítást egy tiszta, hiba nélküli környezetben
+RUN mvn clean package -DskipTests
+
+# --- 2. LÉPÉS: A KÉSZ ALKALMAZÁS FUTTATÁSA ---
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Átvesszük a tiszta fordítás eredményét az 1. lépésből
+COPY --from=build /app/target/*.jar app.jar
+
+# Port kiajánlása
 EXPOSE 8080
 
 # Alkalmazás indítása
