@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String email = null;
         String jwt = null;
 
-        // 1. Kikeresjük a "jwt" nevű sütit a kérésből
+        // jwt suti kikeresese
         if (request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
                 if ("jwt".equals(cookie.getName())) {
@@ -48,10 +48,10 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        // 2. Ha van email, de még nincs hitelesítve a kérés
+        // ha van email de nincs hitelesitve
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // ÚJ: Berakjuk egy try-catch blokkba, ha az adatbázisban már nem létezik a felhasználó!
+            // megnezzuk letezik-e meg a felhasznalo
             try {
                 UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(email);
 
@@ -61,7 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-            } catch (Exception e) { // <-- EZT ÍRTUK ÁT Exception-re!
+            } catch (Exception e) {
                 System.out.println("Hiba a token ellenőrzésekor, a süti figyelmen kívül hagyva: " + e.getMessage());
             }
         }

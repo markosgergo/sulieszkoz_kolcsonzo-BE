@@ -22,7 +22,7 @@ public class KolcsonzesController {
     public KolcsonzesController(KolcsonzesService service) {
         this.service = service;
     }
-
+    // GET /api/kolcsonzesek  – admin/alkalmazott lekérdezi a rendszerben lévő összes kölcsönzést
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ALKALMAZOTT')")
     public ResponseEntity<List<KolcsonzesDTO>> getAllKolcsonzes() {
@@ -50,6 +50,7 @@ public class KolcsonzesController {
         return ResponseEntity.ok(service.getKesesbenLevoKolcsonzesek());
     }
 
+    // POST /api/kolcsonzesek  – a felhasználó lead egy új kölcsönzési/foglalási kérelmet egy eszközre
     @PostMapping
     public ResponseEntity<KolcsonzesDTO> createKolcsonzes(@Valid @RequestBody KolcsonzesLetrehozoDTO dto) {
         KolcsonzesDTO letrehozottKolcsonzes = service.createKolcsonzes(dto);
@@ -61,9 +62,6 @@ public class KolcsonzesController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ALKALMAZOTT')")
     public ResponseEntity<KolcsonzesDTO> elfogadKiadasKerelem(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // A kiadó a jelenleg bejelentkezett alkalmazott/admin lesz
-        // Az ID-t a SecurityContextből kellene kibontani, de mivel nem mindig elérhető könnyen,
-        // átadjuk request paramként is, vagy a service megkapja a usernevet
         String kiadoEmail = authentication.getName();
         return ResponseEntity.ok(service.elfogadKiadasKerelemetEmail(id, kiadoEmail));
     }

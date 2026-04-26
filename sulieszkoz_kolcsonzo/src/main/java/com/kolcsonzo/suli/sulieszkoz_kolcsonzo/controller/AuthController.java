@@ -35,7 +35,7 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
-        this.felhasznaloService = felhasznaloService; // <-- ÉRTÉKADÁS
+        this.felhasznaloService = felhasznaloService;
     }
 
     @GetMapping("/me")
@@ -46,7 +46,6 @@ public class AuthController {
         }
 
         String email = authentication.getName();
-        // Most már tudja használni a felhasznaloService-t!
         FelhasznaloDTO felhasznalo = felhasznaloService.getFelhasznaloByEmail(email);
 
         return ResponseEntity.ok(felhasznalo);
@@ -86,9 +85,9 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> logout() {
         ResponseCookie cookie = ResponseCookie.from("jwt", "")
                 .httpOnly(true)
-                .secure(false) // localhoston maradjon false
+                .secure(false) // localhoston maradhat false
                 .path("/")
-                .maxAge(0) // Azonnal törli a sütit a böngészőből
+                .maxAge(0) // suti torlese bongeszobol
                 .sameSite("Strict")
                 .build();
 

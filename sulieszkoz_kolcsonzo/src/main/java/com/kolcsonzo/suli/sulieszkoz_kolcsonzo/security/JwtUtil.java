@@ -19,7 +19,7 @@ public class JwtUtil {
     private final Key secretKey;
     private final long JWT_TOKEN_VALIDITY = 1000 * 60 * 60 * 10; // 10 óra
 
-    // A Spring Boot az @Value miatt automatikusan beinjektálja ide az application.properties-ből a kulcsot!
+    // A Spring Bootautomatikusan beinjektálja ide az application.properties-ből a kulcsot
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -38,7 +38,7 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        // Itt már a generált secretKey-t használjuk
+        // generalt secretKey hasznalata
         return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
     }
 
@@ -58,7 +58,7 @@ public class JwtUtil {
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
-                .signWith(secretKey) // Itt is a secretKey-t használjuk
+                .signWith(secretKey)
                 .compact();
     }
 

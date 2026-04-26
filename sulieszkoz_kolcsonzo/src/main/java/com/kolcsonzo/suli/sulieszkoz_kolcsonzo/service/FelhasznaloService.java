@@ -80,6 +80,7 @@ public class FelhasznaloService {
         felhasznaloRepository.save(f);
     }
 
+    // felhhaznalo keresese nv alapjan
     public List<FelhasznaloDTO> keresesNevAlapjan(String nev) {
         return felhasznaloRepository.findByNevContainingIgnoreCase(nev).stream()
                 .map(mapper::toDTO)
@@ -92,12 +93,10 @@ public class FelhasznaloService {
         Felhasznalo felhasznalo = felhasznaloRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Felhasználó nem található: " + id));
 
-        // Ha rossz a régi jelszó, BusinessException-t dobunk (ez nem okoz 500-as szerverhibát!)
+        // nem okoz 500-as szerverhibat
         if (!passwordEncoder.matches(dto.getRegiJelszo(), felhasznalo.getJelszo())) {
             throw new com.kolcsonzo.suli.sulieszkoz_kolcsonzo.exception.BusinessException("A megadott régi jelszó helytelen!");
         }
-
-        // Új jelszó kódolása és mentése
         felhasznalo.setJelszo(passwordEncoder.encode(dto.getUjJelszo()));
         felhasznaloRepository.save(felhasznalo);
     }

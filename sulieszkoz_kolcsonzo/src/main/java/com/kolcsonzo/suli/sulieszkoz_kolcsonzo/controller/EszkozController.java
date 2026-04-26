@@ -53,6 +53,7 @@ public class EszkozController {
         return ResponseEntity.noContent().build();
     }
 
+    //GET: /api/eszkozok/1/qrcode Eszköz qr kódjának lekérése
     @GetMapping(value = "/{id}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getEszkozQrCode(@PathVariable Long id) {
         EszkozDTO eszkoz = service.getEszkozById(id);

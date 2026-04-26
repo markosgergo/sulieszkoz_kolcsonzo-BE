@@ -14,7 +14,7 @@ public class KolcsonzesDTO {
 
     private Long id;
 
-    private Long felhasznaloId; //aki kolcsonozte
+    private Long felhasznaloId;
     private String felhasznaloNev;
 
 

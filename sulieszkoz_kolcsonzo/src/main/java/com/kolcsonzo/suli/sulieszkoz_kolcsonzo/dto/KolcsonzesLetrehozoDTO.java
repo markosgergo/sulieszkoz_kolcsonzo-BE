@@ -14,7 +14,7 @@ public class KolcsonzesLetrehozoDTO {
     @NotNull(message = "Az eszköz azonosítója (eszkozId) kötelező!")
     private Long eszkozId;
 
-    // Opcionális: diák foglaláskor nem adja meg, csak admin/alkalmazott általi közvetlen kiadásnál
+    // mindig üresen érkezik, a rendszer tokenbol azonositja
     private Long kiadoId;
 
     @NotNull(message = "A határidő megadása kötelező!")
