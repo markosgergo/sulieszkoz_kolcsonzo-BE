@@ -20,8 +20,10 @@ public class KolcsonzesMapper {
         dto.setEszkozNev(k.getEszkoz().getNev());
         dto.setEszkozSku(k.getEszkoz().getSku());
 
-        dto.setKiadoId(k.getKiado().getFelhasznaloId());
-        dto.setKiadoNev(k.getKiado().getNev());
+        if (k.getKiado() != null) {
+            dto.setKiadoId(k.getKiado().getFelhasznaloId());
+            dto.setKiadoNev(k.getKiado().getNev());
+        }
 
         dto.setStatuszNev(k.getStatusz().name());
 

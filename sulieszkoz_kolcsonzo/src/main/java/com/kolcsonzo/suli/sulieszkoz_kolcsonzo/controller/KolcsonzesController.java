@@ -29,16 +29,18 @@ public class KolcsonzesController {
         return ResponseEntity.ok(service.getAllKolcsonzes());
     }
 
+    // GET /api/kolcsonzesek/kiadasra-var  – admin/alkalmazott látja a jóváhagyásra váró kérelmeket
+    @GetMapping("/kiadasra-var")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALKALMAZOTT')")
+    public ResponseEntity<List<KolcsonzesDTO>> getKiadasraVarok() {
+        return ResponseEntity.ok(service.getKiadasraVarokList());
+    }
+
     //GET /api/kolcsonzesek/sajat
     @GetMapping("/sajat")
     public ResponseEntity<List<KolcsonzesDTO>> getSajatKolcsonzesek() {
-        // 1. Kinyerjük a bejelentkezett felhasználó adatait a biztonsági kontextusból
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 2. A név (username) nálunk az Email címet jelenti (hiszen azzal jelentkezett be)
         String bejelentkezettEmail = authentication.getName();
-
-        // 3. Visszaadjuk az ő kölcsönzéseit
         return ResponseEntity.ok(service.getSajatKolcsonzesek(bejelentkezettEmail));
     }
 
@@ -52,6 +54,26 @@ public class KolcsonzesController {
     public ResponseEntity<KolcsonzesDTO> createKolcsonzes(@Valid @RequestBody KolcsonzesLetrehozoDTO dto) {
         KolcsonzesDTO letrehozottKolcsonzes = service.createKolcsonzes(dto);
         return new ResponseEntity<>(letrehozottKolcsonzes, HttpStatus.CREATED);
+    }
+
+    // PUT /api/kolcsonzesek/{id}/elfogadas  – admin/alkalmazott jóváhagyja a kiadást
+    @PutMapping("/{id}/elfogadas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALKALMAZOTT')")
+    public ResponseEntity<KolcsonzesDTO> elfogadKiadasKerelem(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // A kiadó a jelenleg bejelentkezett alkalmazott/admin lesz
+        // Az ID-t a SecurityContextből kellene kibontani, de mivel nem mindig elérhető könnyen,
+        // átadjuk request paramként is, vagy a service megkapja a usernevet
+        String kiadoEmail = authentication.getName();
+        return ResponseEntity.ok(service.elfogadKiadasKerelemetEmail(id, kiadoEmail));
+    }
+
+    // DELETE /api/kolcsonzesek/{id}/elutasitas  – admin/alkalmazott elutasítja a kérelmet
+    @DeleteMapping("/{id}/elutasitas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALKALMAZOTT')")
+    public ResponseEntity<Void> elutasitKiadasKerelem(@PathVariable Long id) {
+        service.elutasitKiadasKerelem(id);
+        return ResponseEntity.noContent().build();
     }
 
     //PUT /api/kolcsonzesek/{id}/visszavetel

@@ -52,36 +52,125 @@ public class KolcsonzesService {
                 .collect(Collectors.toList());
     }
 
-    // új kölcsönzés indítása
+    // kiadásra váró kérelmek lekérése (admin/alkalmazott számára)
+    public List<KolcsonzesDTO> getKiadasraVarokList() {
+        return kolcsonzesRepository.findByStatusz(KolcsonzesStatuszEnum.KIADASRA_VAR).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // új foglalási kérelem indítása diák által -> KIADASRA_VAR státusz
     @Transactional
     public KolcsonzesDTO createKolcsonzes(KolcsonzesLetrehozoDTO dto) {
         Felhasznalo diak = felhasznaloRepository.findById(dto.getFelhasznaloId())
                 .orElseThrow(() -> new EntityNotFoundException("Nem talalhato felhasznalo (diak) ezzel az ID-val: " + dto.getFelhasznaloId()));
 
-        Felhasznalo kiado = felhasznaloRepository.findById(dto.getKiadoId())
-                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato kiado (tanar/admin) ezzel az ID-val: " + dto.getKiadoId()));
-
         Eszkoz eszkoz = eszkozRepository.findById(dto.getEszkozId())
                 .orElseThrow(() -> new EntityNotFoundException("Nem talalhato eszkoz ezzel az ID-val: " + dto.getEszkozId()));
 
-        // Uzleti szabaly: nem elerheto eszkoz nem kolcsonozhetelo -> BusinessException (400)
+        // Üzleti szabály: nem elérhető eszköz nem foglalható
         if (!eszkoz.isElerheto()) {
             throw new BusinessException("Ez az eszkoz jelenleg nincs keszleten vagy ki van kolcsonozve!");
+        }
+
+        // Ha van kiadoId (pl. admin/alkalmazott közvetlen kiadása), azonnal KIKOLCSONOZVE
+        if (dto.getKiadoId() != null) {
+            Felhasznalo kiado = felhasznaloRepository.findById(dto.getKiadoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Nem talalhato kiado ezzel az ID-val: " + dto.getKiadoId()));
+
+            eszkoz.setElerheto(false);
+            eszkozRepository.save(eszkoz);
+
+            Kolcsonzes ujKolcsonzes = new Kolcsonzes();
+            ujKolcsonzes.setFelhasznalo(diak);
+            ujKolcsonzes.setEszkoz(eszkoz);
+            ujKolcsonzes.setKiado(kiado);
+            ujKolcsonzes.setKiadasDatuma(LocalDateTime.now());
+            ujKolcsonzes.setHatarido(dto.getHatarido());
+            ujKolcsonzes.setStatusz(KolcsonzesStatuszEnum.KIKOLCSONOZVE);
+
+            return mapper.toDTO(kolcsonzesRepository.save(ujKolcsonzes));
+        }
+
+        // Diák foglalása: KIADASRA_VAR, az eszközt lezárjuk hogy mások ne foglalhassák
+        eszkoz.setElerheto(false);
+        eszkozRepository.save(eszkoz);
+        Kolcsonzes ujKolcsonzes = new Kolcsonzes();
+        ujKolcsonzes.setFelhasznalo(diak);
+        ujKolcsonzes.setEszkoz(eszkoz);
+        ujKolcsonzes.setKiado(null); // még nincs jóváhagyó
+        ujKolcsonzes.setKiadasDatuma(null); // még nem adták ki ténylegesen
+        ujKolcsonzes.setHatarido(dto.getHatarido());
+        ujKolcsonzes.setStatusz(KolcsonzesStatuszEnum.KIADASRA_VAR);
+
+        return mapper.toDTO(kolcsonzesRepository.save(ujKolcsonzes));
+    }
+
+    // Alkalmazott/admin jóváhagyja a kiadást – email alapján (a bejelentkezett user lesz a kiadó)
+    @Transactional
+    public KolcsonzesDTO elfogadKiadasKerelemetEmail(Long kolcsonzesId, String kiadoEmail) {
+        Kolcsonzes kolcsonzes = kolcsonzesRepository.findById(kolcsonzesId)
+                .orElseThrow(() -> new EntityNotFoundException("Kolcsonzes nem talalhato ezzel az ID-val: " + kolcsonzesId));
+
+        if (kolcsonzes.getStatusz() != KolcsonzesStatuszEnum.KIADASRA_VAR) {
+            throw new BusinessException("Ez a kérelem nem 'kiadásra vár' státuszban van, nem hagyható jóvá!");
+        }
+
+        Felhasznalo kiado = felhasznaloRepository.findByEmail(kiadoEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato kiado ezzel az emaillel: " + kiadoEmail));
+
+        // Az eszköz már false-ra volt állítva a foglalásnál, csak státuszt váltunk
+        kolcsonzes.setKiado(kiado);
+        kolcsonzes.setKiadasDatuma(LocalDateTime.now());
+        kolcsonzes.setStatusz(KolcsonzesStatuszEnum.KIKOLCSONOZVE);
+
+        return mapper.toDTO(kolcsonzesRepository.save(kolcsonzes));
+    }
+
+    // Alkalmazott/admin jóváhagyja a kiadást -> KIKOLCSONOZVE
+    @Transactional
+    public KolcsonzesDTO elfogadKiadasKerelem(Long kolcsonzesId, Long kiadoId) {
+        Kolcsonzes kolcsonzes = kolcsonzesRepository.findById(kolcsonzesId)
+                .orElseThrow(() -> new EntityNotFoundException("Kolcsonzes nem talalhato ezzel az ID-val: " + kolcsonzesId));
+
+        if (kolcsonzes.getStatusz() != KolcsonzesStatuszEnum.KIADASRA_VAR) {
+            throw new BusinessException("Ez a kérelem nem 'kiadásra vár' státuszban van, nem hagyható jóvá!");
+        }
+
+        Felhasznalo kiado = felhasznaloRepository.findById(kiadoId)
+                .orElseThrow(() -> new EntityNotFoundException("Nem talalhato kiado ezzel az ID-val: " + kiadoId));
+
+        Eszkoz eszkoz = kolcsonzes.getEszkoz();
+        if (!eszkoz.isElerheto()) {
+            throw new BusinessException("Ez az eszkoz időközben már kiadásra kerülhetett!");
         }
 
         eszkoz.setElerheto(false);
         eszkozRepository.save(eszkoz);
 
-        Kolcsonzes ujKolcsonzes = new Kolcsonzes();
-        ujKolcsonzes.setFelhasznalo(diak);
-        ujKolcsonzes.setEszkoz(eszkoz);
-        ujKolcsonzes.setKiado(kiado);
-        ujKolcsonzes.setKiadasDatuma(LocalDateTime.now());
-        ujKolcsonzes.setHatarido(dto.getHatarido());
-        ujKolcsonzes.setStatusz(KolcsonzesStatuszEnum.KIKOLCSONOZVE);
+        kolcsonzes.setKiado(kiado);
+        kolcsonzes.setKiadasDatuma(LocalDateTime.now());
+        kolcsonzes.setStatusz(KolcsonzesStatuszEnum.KIKOLCSONOZVE);
 
-        Kolcsonzes mentettKolcsonzes = kolcsonzesRepository.save(ujKolcsonzes);
-        return mapper.toDTO(mentettKolcsonzes);
+        return mapper.toDTO(kolcsonzesRepository.save(kolcsonzes));
+    }
+
+    // Alkalmazott/admin elutasítja a kiadási kérelmet -> törli
+    @Transactional
+    public void elutasitKiadasKerelem(Long kolcsonzesId) {
+        Kolcsonzes kolcsonzes = kolcsonzesRepository.findById(kolcsonzesId)
+                .orElseThrow(() -> new EntityNotFoundException("Kolcsonzes nem talalhato ezzel az ID-val: " + kolcsonzesId));
+
+        if (kolcsonzes.getStatusz() != KolcsonzesStatuszEnum.KIADASRA_VAR) {
+            throw new BusinessException("Csak 'kiadásra vár' státuszú kérelem utasítható el!");
+        }
+
+        // Eszközt visszaállítjuk elérhetőre
+        Eszkoz eszkoz = kolcsonzes.getEszkoz();
+        eszkoz.setElerheto(true);
+        eszkozRepository.save(eszkoz);
+
+        kolcsonzesRepository.delete(kolcsonzes);
     }
 
     //Késésben lévő kölcsönzések lekérése

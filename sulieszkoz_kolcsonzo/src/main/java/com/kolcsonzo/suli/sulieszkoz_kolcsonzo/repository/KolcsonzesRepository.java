@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface KolcsonzesRepository extends JpaRepository<Kolcsonzes,Long> {
     List<Kolcsonzes> findByFelhasznalo_Email(String email);
+    List<Kolcsonzes> findByStatusz(KolcsonzesStatuszEnum statusz);
     List<Kolcsonzes> findByStatuszAndHataridoBefore(KolcsonzesStatuszEnum statusz, LocalDate datum);
     Optional<Kolcsonzes> findByEszkoz_EszkozIdAndStatusz(Long eszkozId, KolcsonzesStatuszEnum statusz);
 }
