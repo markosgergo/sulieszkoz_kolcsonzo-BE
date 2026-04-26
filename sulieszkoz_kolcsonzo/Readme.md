@@ -1,162 +1,146 @@
-# Sulieszkoz Kolcsonzo – Backend
+# SuliEszköz Kölcsönző – Backend
 
-Iskolai eszközkölcsönző rendszer REST API backendje. Spring Boot alapú, JWT autentikációval, MySQL adatbázissal.
-
----
-
-## Technológiák
-
-- Java 21
-- Spring Boot 3.4
-- Spring Security (JWT, BCrypt)
-- Spring Data JPA (Hibernate)
-- MySQL 8.0
-- Lombok
-- ZXing (QR kód generálás)
-- Docker Compose (fejlesztői adatbázis)
+Iskolai IKT eszközök nyilvántartására és kölcsönzésére szolgáló rendszer REST API backendje. A projekt támogatja a foglalási folyamat adminisztrátori jóváhagyását és a QR-kód alapú gyors visszavételt.
 
 ---
 
-## Első indítás
+## 🛠️ Technológiák
 
-### 1. Előfeltételek
+| Technológia | Verzió |
+|---|---|
+| Java (Amazon Corretto / Eclipse Temurin) | 21 |
+| Spring Boot | 3.4.0 |
+| Spring Security (JJWT, BCrypt) | JJWT 0.11.5 |
+| Spring Data JPA (Hibernate) | Hibernate 6.6 |
+| MySQL | 8.0 |
+| Lombok | – |
+| ZXing (QR kód generálás) | – |
+| Docker & Docker Compose | Multi-stage build |
 
-- [Java 21](https://adoptium.net/)
-- [Maven](https://maven.apache.org/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (az adatbázishoz)
+---
 
-### 2. Projekt klónozása
+## 🚀 Első indítás
+
+### Előfeltételek
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (ajánlott – Java és Maven telepítése **nem szükséges**)
+- Git
+
+### 1. Projekt klónozása
 
 ```bash
 git clone https://github.com/markosgergo/sulieszkoz_kolcsonzo-BE.git
 cd sulieszkoz_kolcsonzo-BE
 ```
 
-### 3. Környezeti változók beállítása
+### 2. Környezeti változók beállítása
 
-Hozz létre egy `.env` fájlt a projekt gyökerében (ahol a `pom.xml` is van) az `.env.example` alapján:
+Hozz létre egy `.env` fájlt a projekt gyökerében (ahol a `pom.xml` is található):
+
+```env
+DB_URL=jdbc:mysql://sulieszkoz_db:3306/sulieszkoz_kolcsonzo
+DB_USER=root
+DB_PASSWORD=titkos_adatbazis_jelszo
+JWT_SECRET=minimum_32_karakteres_nagyon_titkos_kulcs
+```
+
+### 3. Indítás Dockerrel *(ajánlott)*
+
+A projekt multi-stage Dockerfile-t használ, így a Docker egy tiszta környezetben lefordítja a forráskódot, majd elindítja a szervert és az adatbázist.
 
 ```bash
-cp .env.example .env
+# Indítás (fordítással együtt)
+docker-compose up --build -d
 ```
 
-Majd töltsd ki a saját értékeiddel:
-
-```
-DB_PASSWORD=valaszd_meg_a_jelszot
-JWT_SECRET=minimum_32_karakteres_titkos_kulcs
-```
-
-> A `.env` fájlt **soha ne commitold** be a repóba – a `.gitignore` már tartalmazza.
-
-### 4. Adatbázis indítása Dockerrel
+Az alkalmazás a **http://localhost:8080** címen lesz elérhető.
 
 ```bash
-docker-compose up -d
-```
-
-Ez automatikusan elindítja a MySQL 8.0-s konténert és létrehozza a `mydb` adatbázist.
-Az adatok a `mysql_data` Docker volume-ban tárolódnak, tehát újraindítás után sem vesznek el.
-
-Az adatbázis leállításához:
-
-```bash
+# Leállítás
 docker-compose down
 ```
 
-### 5. Alkalmazás indítása
-
-IntelliJ IDEA-ban:
-1. Nyisd meg a projektet
-2. A **Run/Debug Configurations** ablakban az **Environment variables** mezőbe add meg:
-   ```
-   JWT_SECRET=az_env_fajlban_levo_ertek;DB_PASSWORD=az_env_fajlban_levo_ertek
-   ```
-3. Indítsd el a `SulieszkozKolcsonzoApplication` osztályt
-
-Vagy parancssorból:
-
-```bash
-export JWT_SECRET=titkos_kulcs
-export DB_PASSWORD=jelszó
-mvn spring-boot:run
-```
-
-Az alkalmazás alapból a `http://localhost:8080` címen érhető el.
-
 ---
 
-## API végpontok
+## 📡 API Végpontok
 
 ### Autentikáció
+
 | Metódus | Végpont | Leírás | Jogosultság |
-|--------|---------|--------|-------------|
-| POST | `/api/auth/login` | Bejelentkezés | Mindenki |
-| POST | `/api/auth/logout` | Kijelentkezés | Bejelentkezett |
-| GET | `/api/auth/me` | Saját adatok lekérése | Bejelentkezett |
+|---|---|---|---|
+| `POST` | `/api/auth/login` | Bejelentkezés és JWT token igénylése | Public |
+| `POST` | `/api/auth/register` | Új felhasználó regisztrációja | Public |
 
 ### Felhasználók
+
 | Metódus | Végpont | Leírás | Jogosultság |
-|--------|---------|--------|-------------|
-| GET | `/api/felhasznalok` | Összes felhasználó | Bejelentkezett |
-| GET | `/api/felhasznalok/{id}` | Egy felhasználó | Bejelentkezett |
-| GET | `/api/felhasznalok/kereses?nev=` | Keresés név alapján | Bejelentkezett |
-| POST | `/api/felhasznalok` | Regisztráció | Mindenki |
-| DELETE | `/api/felhasznalok/{id}` | Törlés | Bejelentkezett |
+|---|---|---|---|
+| `GET` | `/api/felhasznalok` | Összes felhasználó listázása | ADMIN, ALKALMAZOTT |
+| `GET` | `/api/felhasznalok/me` | Saját profiladatok lekérése | Bejelentkezett |
+| `PUT` | `/api/felhasznalok/{id}/szerepkor` | Felhasználó szerepkörének módosítása | ADMIN |
+| `PUT` | `/api/felhasznalok/me/jelszo` | Saját jelszó megváltoztatása | Bejelentkezett |
 
 ### Eszközök
+
 | Metódus | Végpont | Leírás | Jogosultság |
-|--------|---------|--------|-------------|
-| GET | `/api/eszkozok` | Összes eszköz | Bejelentkezett |
-| GET | `/api/eszkozok/{id}` | Egy eszköz | Bejelentkezett |
-| GET | `/api/eszkozok/szabad` | Szabad eszközök | Bejelentkezett |
-| GET | `/api/eszkozok/kereses?nev=` | Keresés név alapján | Bejelentkezett |
-| GET | `/api/eszkozok/{id}/qrcode` | QR kód generálás | Bejelentkezett |
-| POST | `/api/eszkozok` | Új eszköz | Bejelentkezett |
-| PUT | `/api/eszkozok/{id}` | Eszköz módosítása | Bejelentkezett |
-| DELETE | `/api/eszkozok/{id}` | Eszköz törlése | Bejelentkezett |
+|---|---|---|---|
+| `GET` | `/api/eszkozok` | Összes eszköz listázása | Bejelentkezett |
+| `GET` | `/api/eszkozok/{id}` | Egy eszköz részletes adatai | Bejelentkezett |
+| `GET` | `/api/eszkozok/{id}/qr` | Eszköz QR kódjának lekérése (Base64) | Bejelentkezett |
+| `POST` | `/api/eszkozok` | Új eszköz felvétele | ADMIN, ALKALMAZOTT |
+| `PUT` | `/api/eszkozok/{id}` | Eszköz adatainak módosítása | ADMIN, ALKALMAZOTT |
+| `DELETE` | `/api/eszkozok/{id}` | Eszköz törlése (logikai törlés) | ADMIN, ALKALMAZOTT |
 
 ### Kölcsönzések
+
 | Metódus | Végpont | Leírás | Jogosultság |
-|--------|---------|--------|-------------|
-| GET | `/api/kolcsonzesek` | Összes kölcsönzés | ADMIN, ALKALMAZOTT |
-| GET | `/api/kolcsonzesek/sajat` | Saját kölcsönzések | Bejelentkezett |
-| GET | `/api/kolcsonzesek/kesesben` | Késedelmes kölcsönzések | ADMIN, ALKALMAZOTT |
-| POST | `/api/kolcsonzesek` | Új kölcsönzés | Bejelentkezett |
-| PUT | `/api/kolcsonzesek/{id}/visszavetel` | Visszavétel | ADMIN, ALKALMAZOTT |
+|---|---|---|---|
+| `GET` | `/api/kolcsonzesek` | Az összes kölcsönzés listázása | ADMIN, ALKALMAZOTT |
+| `GET` | `/api/kolcsonzesek/sajat` | Bejelentkezett felhasználó kölcsönzései | Bejelentkezett |
+| `GET` | `/api/kolcsonzesek/kiadasra-var` | Jóváhagyásra váró kérelmek listája | ADMIN, ALKALMAZOTT |
+| `GET` | `/api/kolcsonzesek/kesesben` | Lejárt határidejű kölcsönzések | ADMIN, ALKALMAZOTT |
+| `POST` | `/api/kolcsonzesek` | Új foglalási kérelem leadása | USER (Tanuló) |
+| `PUT` | `/api/kolcsonzesek/{id}/elfogadas` | Foglalás jóváhagyása (kiadás) | ADMIN, ALKALMAZOTT |
+| `DELETE` | `/api/kolcsonzesek/{id}/elutasitas` | Foglalás elutasítása | ADMIN, ALKALMAZOTT |
+| `PUT` | `/api/kolcsonzesek/{id}/visszavetel` | Visszavétel rögzítése (ID alapján) | ADMIN, ALKALMAZOTT |
+| `PUT` | `/api/kolcsonzesek/visszavetel/eszkoz/{id}` | QR alapú visszavétel (Eszköz ID alapján) | ADMIN, ALKALMAZOTT |
 
 ---
 
-## Szerepkörök
+## 🔐 Szerepkörök és Jogosultságok
 
 | Szerepkör | Leírás |
-|-----------|--------|
-| `FELHASZNALO` | Diák – csak saját kölcsönzéseit látja |
-| `ALKALMAZOTT` | Kezelheti a kölcsönzéseket és látja a késésben lévőket |
-| `ADMIN` | Teljes hozzáférés |
+|---|---|
+| `USER` | Tanuló vagy tanár. Eszközöket böngészhet és foglalhat le. |
+| `ALKALMAZOTT` | Kezelő személyzet. Jóváhagyja a kiadást, rögzíti a visszavételt (QR-ral is). |
+| `ADMIN` | Rendszergazda. Teljes hozzáférés, felhasználói szerepkörök kezelése. |
 
 ---
 
-## Tesztek futtatása
+## 📁 Projektstruktúra
+
+```
+src/main/java/com/kolcsonzo/suli/sulieszkoz_kolcsonzo/
+├── config/         # Security (JWT) és CORS konfigurációk
+├── controller/     # REST API végpontok (Controller réteg)
+├── dto/            # Adatátviteli objektumok (Request/Response)
+├── enums/          # Státusz és Szerepkör típusok
+├── exception/      # Egyedi hibakezelők (Business/EntityNotFound)
+├── mapper/         # Entity <-> DTO konverziók
+├── model/          # JPA Entitások (Adatbázis modellek)
+├── repository/     # Spring Data JPA interfészek
+├── security/       # JWT Filter és Token Utility osztályok
+└── service/        # Üzleti logika megvalósítása
+```
+
+---
+
+## 🧪 Tesztelés
+
+A backend egységtesztjei (JUnit 5 + Mockito) a következő paranccsal futtathatók:
 
 ```bash
 mvn test
 ```
 
----
-
-## Projektstruktúra
-
-```
-src/main/java/.../
-├── config/          # CORS és Security konfiguráció
-├── controller/      # REST végpontok
-├── dto/             # Adatátviteli objektumok
-├── enums/           # Szerepkör és státusz enumok
-├── exception/       # Saját kivételosztályok és globális kezelő
-├── mapper/          # Entitás <-> DTO konverterek
-├── model/           # JPA entitások
-├── repository/      # Adatbázis műveletek
-├── security/        # JWT filter és utility
-└── service/         # Üzleti logika
-```
+Az API manuális teszteléséhez a projekthez mellékelve van egy **Postman Collection**, amely tartalmazza az összes végpontot és az automatikus JWT token kezelést.
